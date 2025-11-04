@@ -2,10 +2,10 @@ import { MongooseModule, Prop, Schema, SchemaFactory, Virtual } from "@nestjs/mo
 import { HydratedDocument } from "mongoose";
 import { GenderEnum, LanguageEnum, ProviderEnum, RoleEnum } from "src/common/enums";
 import { OtpDocument } from "./otp.model";
-import { generateHash } from "src/common";
+import { generateHash, IUser } from "src/common";
 
 @Schema({strictQuery:true , timestamps:true , toObject:{virtuals:true},toJSON:{virtuals:true}})
-export class User{
+export class User implements IUser{
     @Prop({
         type: String,
         minLength: 2,
@@ -98,6 +98,11 @@ export class User{
   required: false,
 })
 profileImage?: string;
+    @Prop({
+  type: String,
+  required: false,
+})
+profilePicture?: string;
 @Prop({ type: String, required: false })
 resetPasswordOtp?: string;
 
@@ -108,12 +113,12 @@ userSchema.virtual('otp', {
     foreignField: "createdBy",
     ref:"Otp"
 })
- userSchema.pre("save", async function (next) {
-    if (this.isModified('password')) {
-        this.password = await generateHash(this.password)
-    }
-     next();
- });
+//  userSchema.pre("save", async function (next) {
+//     if (this.isModified('password')) {
+//         this.password = await generateHash(this.password)
+//     }
+//      next();
+//  });
 export type UserDocument = HydratedDocument<User>;
 export const UserModel = MongooseModule.forFeature([
     { name: User.name, schema: userSchema }

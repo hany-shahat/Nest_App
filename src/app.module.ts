@@ -7,7 +7,9 @@ import { resolve } from 'path';
 import { UserModule } from './modules/user/user.module';
 import { CategoryModule } from './modules/category/category.module';
 import { MongooseModule } from '@nestjs/mongoose';
-import { SheredAuthenticationModule } from './common';
+import { S3Service, SheredAuthenticationModule } from './common';
+import { BrandModule } from './modules/brand/brand.module';
+import { ProductModule } from './modules/product/product.module';
 
 
 
@@ -19,9 +21,14 @@ import { SheredAuthenticationModule } from './common';
     SheredAuthenticationModule,
     AuthenticationModule,
     UserModule,
-    CategoryModule
+    BrandModule,
+    CategoryModule,
+    ProductModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    S3Service,
+  ],
 })
 export class AppModule {}

@@ -67,7 +67,7 @@ export abstract class DatabaseRepository<TRawDocument,TDocument=HydratedDocument
             page?: number | "all",
             size?: number,
         
-        }): Promise<TDocument[] | [] | lean<TDocument>[] | any>{
+        }): Promise<{docsCount?:number,limit?:number,pages?:number,currentPage?:number|undefined,result:TDocument[]|lean<TDocument>[]}>{
         let docsCount: number | undefined = undefined;
         let pages: number | undefined = undefined;
         if (page !== "all") {
@@ -81,7 +81,7 @@ export abstract class DatabaseRepository<TRawDocument,TDocument=HydratedDocument
             pages=Math.ceil(docsCount/options.limit)
         }
        const result =await this.find({filter , select , options})
-        return {docsCount,limit:options.limit,pages,currentPage:page,result};
+        return {docsCount,limit:options.limit,pages,currentPage:page !== 'all'?page:undefined,result};
     }
     async findById({
        id,
@@ -175,7 +175,13 @@ export abstract class DatabaseRepository<TRawDocument,TDocument=HydratedDocument
             filter?: RootFilterQuery<TRawDocument>
             update: UpdateQuery<TDocument>
             options?: QueryOptions<TDocument> | null;
-        }): Promise<TDocument | lean <TDocument> | null>{
+        }): Promise<TDocument | lean<TDocument> | null>{
+         if (Array.isArray(update)) {
+            update.push({
+                $set: { __v: { $add: ["$__v", 1] }, },
+            });
+             return await this.model.findOneAndUpdate(filter||{},update,options)
+        }
         return await this.model.findOneAndUpdate(filter,{...update,$inc:{__v:1}},options)
     }
     async updateMany({

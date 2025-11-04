@@ -1,9 +1,11 @@
-import { Controller, Get, Headers, Post, Req, UseInterceptors } from "@nestjs/common";
+import { Controller, Get, Headers, MaxFileSizeValidator, ParseFilePipe, Patch, Post, Req, UploadedFile, UploadedFiles, UseInterceptors } from "@nestjs/common";
 import { UserService } from "./user.service";
-import{ RoleEnum, TokenEnum, User, type IAuthRequest } from "src/common";
+import{cloudFileUpload, fileValidation, type IMulterFile, IResponse, IUser, localFileUpload, RoleEnum, StorageEnum, successResponse, TokenEnum, User } from "src/common";
 import { Auth } from "src/common/decorators/auth.decorators";
 import type{ UserDocument } from "src/DB";
 import { PreferredLanguageInterceptor } from "src/common/interceptors";
+import { FileFieldsInterceptor, FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
+import { ProfileResponse } from "./entities/user.entity";
 
 
 
@@ -22,7 +24,73 @@ export class UserController{
         
         return { message: "Done" };
     }
-    
+
+
+// profile image
+    @UseInterceptors(FileInterceptor('profileImage',
+        cloudFileUpload({
+            storageApproach: StorageEnum.disk,
+            validation: fileValidation.image,
+            fileSize: 2,
+        })))
+    @Auth([RoleEnum.user])
+    @Patch('profile-image')
+    async ProfileImage(
+        @User() user: UserDocument,
+        @UploadedFile(
+            new ParseFilePipe({
+                validators: [new MaxFileSizeValidator({ maxSize: 2 * 1024 * 1024 })],
+                fileIsRequired: true,
+            })
+        )
+        file: Express.Multer.File
+    ): Promise<IResponse<ProfileResponse>> {
+      const profile=  await this.userService.profileImage(file,user)
+        return successResponse<ProfileResponse>({ data: { profile } });
+    }
+
+// cover image
+    @UseInterceptors(FilesInterceptor('coverImages',2,
+        localFileUpload({
+            folder: 'User',
+            validation: fileValidation.image,
+            fileSize:2,
+        })))
+    @Auth([RoleEnum.user])
+    @Patch('cover-image')
+    CoverImage(
+        @UploadedFiles(
+            new ParseFilePipe({
+                validators:[new MaxFileSizeValidator({maxSize:2*1024*1024})],
+                fileIsRequired:true,
+            })
+        ) files:Array<IMulterFile>
+    ) {
+    return {message:"Done",files}
+    }
+
+// image && cover image
+    @UseInterceptors(FileFieldsInterceptor([{name:'profileImage' , maxCount:1},{name:'coverImage' , maxCount:2}],
+        localFileUpload({
+            folder: 'User',
+            validation: fileValidation.image,
+            fileSize:2,
+        })))
+    @Auth([RoleEnum.user])
+    @Patch('image')
+    Image(
+        @UploadedFiles(
+            new ParseFilePipe({
+                // validators:[new MaxFileSizeValidator({maxSize:2*1024*1024})],
+                fileIsRequired:true,
+            })
+        ) files: {
+                profileImage: Array<IMulterFile>;
+                coverImage: Array<IMulterFile>;
+        }
+    ) {
+    return {message:"Done",files}
+    }
     // @Post()
     // profile123(): { message: string }{
     //     return {message:'Done'}

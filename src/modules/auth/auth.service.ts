@@ -58,7 +58,7 @@ export class AuthenticationService{
    async resendConfirmEmail(data: ResendConfirmEmailBodyDto): Promise<string>{
         const {  email } = data;
        const user = await this.userRepository.findOne({
-           filter: { email, confirmedAt: { $exists: false } },
+           filter: { email, confirmedAt: {$exists:true}},
            options: {
                populate:[{path:"otp" , match:{type:OtpEnum.ConfirmEmail}}]
            }
@@ -76,7 +76,7 @@ export class AuthenticationService{
    async confirmEmail(data: ConfirmEmailBodyDto): Promise<string>{
         const {  email , code} = data;
        const user = await this.userRepository.findOne({
-           filter: { email, confirmedAt: { $exists: false } },
+           filter: { email, confirmedAt:null },
            options: {
                populate:[{path:"otp" , match:{type:OtpEnum.ConfirmEmail}}]
            }
@@ -99,9 +99,11 @@ export class AuthenticationService{
      const user = await this.userRepository.findOne({
          filter:
          {
-             email, confirmedAt: { $exists: true }, provider: ProviderEnum.SYSTEM
+             email, confirmedAt: { $exists:true }, provider: ProviderEnum.SYSTEM
          },
+ 
      });
+     console.log("🧍 Found user:", user);
        if (!user) {
         throw new NotFoundException("Fail to find matching account")
        }
