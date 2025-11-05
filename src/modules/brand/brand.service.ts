@@ -1,10 +1,10 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
- import { CreateBrandDto } from './dto/create-brand.dto';
-import { BrandDocument, BrandRepository, lean, TokenDocument, UserDocument } from 'src/DB';
-import { FolderEnum, S3Service } from 'src/common';
-import { GetAllDTO, UpdateBrandDto } from './dto/update-brand.dto';
+import { CreateBrandDto } from './dto/create-brand.dto';
+import { BrandDocument, BrandRepository, lean, UserDocument } from 'src/DB';
+import { FolderEnum, GetAllDTO, S3Service } from 'src/common';
+import {  UpdateBrandDto } from './dto/update-brand.dto';
 import {  Types } from 'mongoose';
-import { BrandResponse } from './entities/brand.entity';
+
 // import { UpdateBrandDto } from './dto/update-brand.dto';
 
 @Injectable()
@@ -183,9 +183,9 @@ export class BrandService {
         ...(search
           ? {
             $or: [
-              { name: { $reges: search, $options: 'i' } },
-              { slug: { $reges: search, $options: 'i' } },
-              { slogan: { $reges: search, $options: 'i' } },
+              { name: { $regex: search, $options: 'i' } },
+              { slug: { $regex: search, $options: 'i' } },
+              { slogan: { $regex: search, $options: 'i' } },
             ],
           }
           : {}),

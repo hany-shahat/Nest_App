@@ -1,0 +1,104 @@
+import { MongooseModule, Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { HydratedDocument, Types } from "mongoose";
+import {  ICoupon, IOrder, IOrderProduct, IProduct } from "src/common";
+import { OrderStatusEnum, PaymentEnum } from "src/common/enums/order.enum";
+
+@Schema({ timestamps: true, strictQuery: true ,toJSON:{virtuals:true},toObject:{virtuals:true}})
+export class OrderProduct implements IOrderProduct{
+     @Prop({type:Types.ObjectId,ref:"Product"})
+    productId: Types.ObjectId | IProduct;
+      @Prop({type:Number , required:true})
+    quantity: number;
+      @Prop({type:Number , required:true})
+    unitPrice: number;
+      @Prop({type:Number , required:true})
+    finalPrice: number;
+    }
+@Schema({ timestamps: true ,strictQuery:true ,toJSON:{virtuals:true},toObject:{virtuals:true}})
+export class Order implements IOrder{
+    @Prop({type:String,required:true})
+    address: string;
+
+    @Prop({type:String ,required:true})
+    phone: string;
+
+    @Prop({type:String , required:false})
+    note?: string;
+
+    @Prop({ type: String, enum:PaymentEnum, required: true ,default:PaymentEnum.Cash})
+    payment: PaymentEnum;
+    @Prop({
+        type: String, enum: OrderStatusEnum, required: true, default: function (this: Order) {
+        return this.payment==PaymentEnum.Card ? OrderStatusEnum.Pending:OrderStatusEnum.Placed
+    }})
+    status: OrderStatusEnum;
+
+    @Prop({ type: String , required:false})
+    cancelReason?: string;
+    
+    @Prop({type:Types.ObjectId,ref:"Coupon"})
+    coupon: Types.ObjectId | ICoupon;
+
+    @Prop({type:Number , default:0})
+    discount: number;
+
+    @Prop({type:Number , required:true})
+    total: number;
+
+    @Prop({type:Number })
+    subtotal: number;
+
+    @Prop({type:Date })
+    paidAt?: Date;
+
+    @Prop({type:String ,required:false})
+    paymentIntent?: string;
+
+    @Prop({ type: String })
+    intentId: string;
+    
+    @Prop({type:String , required:true ,unique:true})
+    orderId: string;
+
+    @Prop([OrderProduct])
+    products: IOrderProduct[];
+
+    @Prop({ type: Types.ObjectId, ref: "User", required: true })
+    createdBy: Types.ObjectId;
+    @Prop({ type: Types.ObjectId, ref: "User" })
+    updatedBy: Types.ObjectId;
+     @Prop({ type: Date })
+    freezedAt?: Date;
+    @Prop({ type: Date })
+    restordAt?: Date;
+}
+export type OrderDocument = HydratedDocument<Order>
+const orderSchema = SchemaFactory.createForClass(Order)
+orderSchema.index({ expiredAt: 1 }, { expireAfterSeconds: 0 });
+
+orderSchema.pre("save", async function (next) {
+    if (this.isModified("total")) {
+        this.subtotal = this.total - (this.total * this.discount);
+    }
+})
+orderSchema.pre(['updateOne','findOneAndUpdate'], async function (next)
+{
+    const query = this.getQuery();
+    if (query.paranoId  === false) {
+        this.setQuery({...query})
+    } else {
+        this.setQuery({ ...query, freezedAt: { $exists: false } });
+    }
+    next();
+},);
+orderSchema.pre(['findOne','find'], async function (next)
+{
+    const query = this.getQuery();
+    if (query.paranoId  === false) {
+        this.setQuery({...query})
+    } else {
+        this.setQuery({ ...query, freezedAt: { $exists: false } });
+    }
+    next();
+},);
+export const OrderModel=MongooseModule.forFeature([{name:Order.name , schema:orderSchema}])

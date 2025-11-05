@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import { GenderEnum, LanguageEnum, ProviderEnum, RoleEnum } from "../enums";
 import { OtpDocument } from "src/DB";
+import { IProduct } from "./product.interface";
 
 export interface IUser{
     _id?: Types.ObjectId;
@@ -32,4 +33,7 @@ export interface IUser{
 
     createdAt?: Date;
     updatedAt?: Date;
+
+
+    whislist?: Types.ObjectId[] | IProduct[];
 }

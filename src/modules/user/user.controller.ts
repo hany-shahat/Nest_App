@@ -14,16 +14,22 @@ import { ProfileResponse } from "./entities/user.entity";
 export class UserController{
     constructor(private readonly userService: UserService) { }
     @UseInterceptors(PreferredLanguageInterceptor)
-    @Auth([RoleEnum.user,RoleEnum.admin],TokenEnum.access)
-    @Get()
-    profile(
-        @Headers() header: any,
-        @User() user: UserDocument): { message: string }
-    {
-        console.log({lang:header['accept-language'],user});
         
-        return { message: "Done" };
+        
+        // Profile
+    @Auth([RoleEnum.user,RoleEnum.admin,RoleEnum.superAdmin])
+    @Get()
+   async profile(
+        @User() user: UserDocument
+    
+    ):Promise<IResponse<ProfileResponse>>{
+       const profile=await this.userService.profile(user)
+        
+        return successResponse<ProfileResponse>({data:{profile}});
     }
+
+
+
 
 
 // profile image
@@ -49,6 +55,8 @@ export class UserController{
         return successResponse<ProfileResponse>({ data: { profile } });
     }
 
+
+
 // cover image
     @UseInterceptors(FilesInterceptor('coverImages',2,
         localFileUpload({
@@ -68,6 +76,8 @@ export class UserController{
     ) {
     return {message:"Done",files}
     }
+
+
 
 // image && cover image
     @UseInterceptors(FileFieldsInterceptor([{name:'profileImage' , maxCount:1},{name:'coverImage' , maxCount:2}],
@@ -91,6 +101,8 @@ export class UserController{
     ) {
     return {message:"Done",files}
     }
+
+
     // @Post()
     // profile123(): { message: string }{
     //     return {message:'Done'}

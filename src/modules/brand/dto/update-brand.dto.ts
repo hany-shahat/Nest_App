@@ -13,23 +13,3 @@ export class BrandParamsDTO{
 }
 
 
-
-export class GetAllDTO{
-    @Type(() => Number)
-    @IsNumber()
-    @IsPositive()
-    @IsOptional()
-    page: number;
-    
-    @Type(() => Number)
-    @IsNumber()
-    @IsPositive()
-    @IsOptional()
-    size: number;
-
-    @IsNotEmpty()
-    @IsOptional() 
-    @IsString()
-    search: string;
-
-}

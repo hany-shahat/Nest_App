@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, ParseFilePipe, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { CategoryParamsDTO, GetAllDTO, UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoryParamsDTO, UpdateCategoryDto } from './dto/update-category.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Auth, cloudFileUpload, fileValidation, IResponse, successResponse, User } from 'src/common';
+import { Auth, cloudFileUpload, fileValidation, GetAllDTO, GetAllResponse, ICategory, IResponse, successResponse, User } from 'src/common';
 import { endPoint } from './category.authorization';
 import type{ UserDocument } from 'src/DB';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { CategoryResponse, GetAllResponse } from './entities/category.entity';
+import { CategoryResponse } from './entities/category.entity';
 
 
 @UsePipes(new ValidationPipe({whitelist:true , forbidNonWhitelisted:true}))
@@ -123,9 +123,9 @@ export class CategoryController {
     @Get()
     async findAll(
       @Query() query:GetAllDTO
-     ):Promise<IResponse<GetAllResponse>> {
+     ):Promise<IResponse<GetAllResponse<ICategory>>> {
       const result = await this.categoryService.findAll(query);
-      return successResponse<GetAllResponse>({data:{result}})
+      return successResponse<GetAllResponse<ICategory>>({data:{result}})
     }
   
   
@@ -134,9 +134,9 @@ export class CategoryController {
     @Get('archive')
     async findAllArchive(
       @Query() query:GetAllDTO
-     ):Promise<IResponse<GetAllResponse>> {
+     ):Promise<IResponse<GetAllResponse<ICategory>>> {
       const result = await this.categoryService.findAllArchive(query , true);
-      return successResponse<GetAllResponse>({data:{result}})
+      return successResponse<GetAllResponse<ICategory>>({data:{result}})
     }
   
   

@@ -133,7 +133,7 @@ export abstract class DatabaseRepository<TRawDocument,TDocument=HydratedDocument
             });
              return await this.model.updateOne(filter||{},update,options)
         }
-        return await this.model.updateOne(filter || {},{...update,$inc:{__v:1}},options)
+        return await this.model.updateOne(filter || {},{$inc:{__v:1},...update},options)
     }
     async deleteOne({
         filter,

@@ -1,8 +1,8 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { GetAllDTO, UpdateCategoryDto } from './dto/update-category.dto';
+import {  UpdateCategoryDto } from './dto/update-category.dto';
 import { BrandRepository, CategoryDocument, CetagoryRepository, lean, UserDocument } from 'src/DB';
-import { FolderEnum, S3Service } from 'src/common';
+import { FolderEnum, GetAllDTO, S3Service } from 'src/common';
 import { Types } from 'mongoose';
 import { randomUUID } from 'crypto';
 
@@ -251,8 +251,8 @@ export class CategoryService {
          ...(search
            ? {
              $or: [
-               { name: { $reges: search, $options: 'i' } },
-               { slug: { $reges: search, $options: 'i' } },
+               { name: { $$regex: search, $options: 'i' } },
+               { slug: { $$regex: search, $options: 'i' } },
                { descrption: { $reges: search, $options: 'i' } },
              ],
            }

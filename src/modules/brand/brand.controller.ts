@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UploadedFile, UseInterceptors, ParseFilePipe, UsePipes, ValidationPipe, Query } from '@nestjs/common';
 import { BrandService } from './brand.service';
 import { CreateBrandDto } from './dto/create-brand.dto';
-import { Auth, cloudFileUpload, fileValidation, IResponse, successResponse, User } from 'src/common';
+import { Auth, cloudFileUpload, fileValidation, GetAllDTO, GetAllResponse, IBrand, IResponse, successResponse, User } from 'src/common';
 import type{ UserDocument } from 'src/DB';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { BrandResponse, GetAllResponse } from './entities/brand.entity';
+import { BrandResponse } from './entities/brand.entity';
 import { endPoint } from './brand.authorization';
-import { BrandParamsDTO, GetAllDTO, UpdateBrandDto } from './dto/update-brand.dto';
+import { BrandParamsDTO,  UpdateBrandDto } from './dto/update-brand.dto';
 
 @UsePipes(new ValidationPipe({whitelist:true,forbidNonWhitelisted:true}))
 @Controller('brand')
@@ -107,9 +107,9 @@ export class BrandController {
   @Get()
   async findAll(
     @Query() query:GetAllDTO
-   ):Promise<IResponse<GetAllResponse>> {
+   ):Promise<IResponse<GetAllResponse<IBrand>>> {
     const result = await this.brandService.findAll(query);
-    return successResponse<GetAllResponse>({data:{result}})
+    return successResponse<GetAllResponse<IBrand>>({data:{result}})
   }
 
 
@@ -118,9 +118,9 @@ export class BrandController {
   @Get('archive')
   async findAllArchive(
     @Query() query:GetAllDTO
-   ):Promise<IResponse<GetAllResponse>> {
+   ):Promise<IResponse<GetAllResponse<IBrand>>> {
     const result = await this.brandService.findAllArchive(query , true);
-    return successResponse<GetAllResponse>({data:{result}})
+    return successResponse<GetAllResponse<IBrand>>({data:{result}})
   }
 
 

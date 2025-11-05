@@ -1,5 +1,5 @@
 import { MongooseModule, Prop, Schema, SchemaFactory, Virtual } from "@nestjs/mongoose";
-import { HydratedDocument } from "mongoose";
+import { HydratedDocument, Types } from "mongoose";
 import { GenderEnum, LanguageEnum, ProviderEnum, RoleEnum } from "src/common/enums";
 import { OtpDocument } from "./otp.model";
 import { generateHash, IUser } from "src/common";
@@ -48,6 +48,7 @@ export class User implements IUser{
     })
     confirmEmail: Date;
 
+
     @Prop({
         type: String,
         required: function (this: User) {
@@ -56,12 +57,16 @@ export class User implements IUser{
     })
     password: string;
 
+
     @Prop({
         type: String,
         enum: ProviderEnum,
         default: ProviderEnum.SYSTEM
     })
     provider: ProviderEnum;
+
+
+
     @Prop({
         type: String,
         enum: RoleEnum,
@@ -69,12 +74,18 @@ export class User implements IUser{
     })
     role: RoleEnum;
 
+
+
+
     @Prop({
         type: String,
         enum: GenderEnum,
         default:GenderEnum.male
     })
     gender: GenderEnum;
+
+
+
     @Prop({
         type: String,
         enum: LanguageEnum,
@@ -82,29 +93,48 @@ export class User implements IUser{
     })
     preferredLanguage: LanguageEnum;
 
+
+
        @Prop({
         type: Date,
         required: false,
     })
     changeCredentialsTime: Date;
 
+
+
     @Virtual()
     otp: OtpDocument[];
 
+
+
     @Prop({ type: Date, default: null })
     confirmedAt?: Date;
+
+
+
     @Prop({
   type: String,
   required: false,
-})
-profileImage?: string;
+    })
+    profileImage?: string;
+    
+
+
     @Prop({
   type: String,
   required: false,
-})
-profilePicture?: string;
+    })    
+    profilePicture?: string;
+    
+
 @Prop({ type: String, required: false })
-resetPasswordOtp?: string;
+    resetPasswordOtp?: string;
+    
+
+@Prop({type:[{type:Types.ObjectId,ref:"Product"}]})
+    whislist?: Types.ObjectId[];
+
 
 }
 const userSchema = SchemaFactory.createForClass(User);
